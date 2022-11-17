@@ -14,8 +14,11 @@
 <br>
 
 ## 0. 다운로드 <a href="#_0" id="_0"></a>
-nuget ConsoleTree 검색 후 다운로드하면 됨.
+nuget에서 CTree 검색 후 다운로드하면 됨.
 
+<br>
+<br>
+<br>
 
 ## 1. 시작 배경 <a href="#_1" id="_1"></a>
 
