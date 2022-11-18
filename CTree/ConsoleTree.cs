@@ -8,12 +8,16 @@
  *
  */
 
+using System.Reflection.Metadata.Ecma335;
+
 using CTree.Internal;
 using CTree;
 
-public class ConsoleTree
+public class ConsoleTree : ICloneable
 {
     public ConsoleTreeItem Root { get; }
+    public int Count => Root.Count + 1;
+    public int CountRecursive => Root.CountRecursive + 1;
 
     public static char VertialBridge = '│';
     public static char VerticalItemBridge = '├';
@@ -28,22 +32,46 @@ public class ConsoleTree
     public ConsoleColor ItemBackgroundColor { get; set; } = Console.BackgroundColor;
 
     public ConsoleTree() => Root = new ConsoleTreeItem();
+    public ConsoleTree(ConsoleTreeItem root) => Root = root;
     public ConsoleTree(string rootName) => Root = new ConsoleTreeItem(rootName);
-    public void Add(ConsoleTreeItem item1) => Root.Add(item1);
-    public void Add(params ConsoleTreeItem[] items) => Root.Add(items);
-    public void Add(string name) => Root.Add(new ConsoleTreeItem(name));
-    public void Add(string name, object tag) => Root.Add(new ConsoleTreeItem(name, tag));
-
-    public void AddDummy(int count = 1)
+    public ConsoleTree(string rootName, object tag) => Root = new ConsoleTreeItem(rootName, tag);
+    public ConsoleTree(string rootName, object tag, List<ConsoleTreeItem> children) => Root = new ConsoleTreeItem(rootName, tag, children);
+    public ConsoleTreeItem Add(ConsoleTreeItem item1)
     {
-        for (int i = 0; i < count; i++)
-            Root.AddDummy();
+        Root.Add(item1);
+        return Root;
+    }
+    public ConsoleTreeItem Add(params ConsoleTreeItem[] items)
+    {
+        Root.Add(items);
+        return Root;
     }
 
+    public ConsoleTreeItem Add(string name)
+    {
+        Root.Add(name);
+        return Root;
+    }
+
+    public ConsoleTreeItem Add(string name, object tag)
+    {
+        Root.Add(name, tag);
+        return Root;
+    }
+
+    public ConsoleTreeItem AddDummy(int count = 1)
+    {
+        Root.AddDummy(count);
+        return Root;
+    }
+
+    public ConsoleTreeItem AddReturnChild(string name) => Root.AddReturnChild(name);
+    public ConsoleTreeItem AddReturnChild(string name, object tag) => Root.AddReturnChild(name ,tag);
+
     public bool Remove(ConsoleTreeItem item) => Root.Remove(item);
-    public int Count() => Count(Root) + 1;
     public bool Contains(ConsoleTreeItem item) => Contains(Root, item);
     public ConsoleTreeItem? Find(Predicate<ConsoleTreeItem> predicate) => Find(Root, predicate);
+    public void ForEach(Action<ConsoleTreeItem> action) => ForEach(Root, action);
     private static bool Contains(ConsoleTreeItem parent, ConsoleTreeItem item)
     {
         if (parent.Contains(item))
@@ -54,6 +82,14 @@ public class ConsoleTree
                 return true;
 
         return false;
+    }
+
+    private static void ForEach(ConsoleTreeItem parent, Action<ConsoleTreeItem> action)
+    {
+        action(parent);
+
+        foreach (var child in parent)
+            ForEach(child, action);
     }
 
     private static ConsoleTreeItem? Find(ConsoleTreeItem parent, Predicate<ConsoleTreeItem> predicate)
@@ -77,13 +113,7 @@ public class ConsoleTree
         return find;
     }
 
-    private static int Count(ConsoleTreeItem item)
-    {
-        int count = 0;
-        count += item.Count;
-        item.ForEach(x => count += Count(x));
-        return count;
-    }
+    
 
     public void Print()
     {
@@ -149,4 +179,24 @@ public class ConsoleTree
         ConsoleEx.WriteLine(item.Name,
             item.ForegroundColor == ConsoleColor.Black ? ItemForegroundColor : item.ForegroundColor,
             item.BackgroundColor == ConsoleColor.Black ? ItemBackgroundColor : item.BackgroundColor);
+
+    public object Clone() => new ConsoleTree((Root.Clone() as ConsoleTreeItem)!);
+
+    public ConsoleTree SetBridgeForegroundColor(ConsoleColor bridgeForegroundColor)
+    {
+        BridgeForegroundColor = bridgeForegroundColor;
+        return this;
+    }
+
+    public ConsoleTree SetItemForegroundColor(ConsoleColor itemForegroundColor)
+    {
+        ItemForegroundColor = itemForegroundColor;
+        return this;
+    }
+
+    public ConsoleTree SetItemBackgroundColor(ConsoleColor itemBackgroundColor)
+    {
+        ItemBackgroundColor = itemBackgroundColor;
+        return this;
+    }
 }

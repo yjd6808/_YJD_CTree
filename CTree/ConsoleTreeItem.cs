@@ -9,6 +9,8 @@
  */
 
 using System.Collections;
+using System.Runtime.CompilerServices;
+using System.Text;
 
 using CTree.Internal;
 
@@ -35,13 +37,16 @@ namespace CTree;
  * - ForegroundColor: 해당 아이템의 전경 색상만 변경
  * - BackgroundColor: 해당 아이템의 배경 색상만 변경
  *    => 초기 검정 색상으로 설정되어있는데 디폴트 값으로 처리함. 실제로 검정색으로 출력되는게 아님
+ * - Count: 자기를 제외한 자식의 수
+ * - CountRecursive: 자기를 제외한 서브트리 자식들까지 포함한 수
  */
-public class ConsoleTreeItem : IList<ConsoleTreeItem>
+public class ConsoleTreeItem : IList<ConsoleTreeItem>, ICloneable
 {
-    private readonly List<ConsoleTreeItem> _items;
-    public ConsoleTreeItem? Parent { get; private set; }
+    private List<ConsoleTreeItem> Items { get; }
+    public ConsoleTreeItem? Parent { get; set; }
     public bool Fold { get; set; }
-    public int Count => _items.Count;
+    public int Count => Items.Count;                
+    public int CountRecursive => CountOf(this);
     public bool Dummy { get; set; }
     public string Name { get; set; }
     public object? Tag { get; set; }
@@ -53,86 +58,169 @@ public class ConsoleTreeItem : IList<ConsoleTreeItem>
     public static int DefaultBridgeLength = 0;
 
 
-    private static readonly ConsoleTreeItem s_dummy = new() { Dummy = true };
-
     public ConsoleTreeItem this[int index]
     {
-        get => _items[index];
-        set => _items[index] = value;
+        get => Items[index];
+        set => Items[index] = value;
     }
 
     public ConsoleTreeItem()
     {
         Name = string.Empty;
-        _items = new List<ConsoleTreeItem>();
+        Items = new List<ConsoleTreeItem>();
     }
 
     public ConsoleTreeItem(string name)
     {
         Name = name;
-        _items = new List<ConsoleTreeItem>();
+        Items = new List<ConsoleTreeItem>();
     }
 
     public ConsoleTreeItem(string name, object tag)
     {
         Name = name;
         Tag = tag;
-        _items = new List<ConsoleTreeItem>();
+        Items = new List<ConsoleTreeItem>();
     }
 
+    public ConsoleTreeItem(string name, object tag, List<ConsoleTreeItem> items)
+    {
+        Name = name;
+        Tag = tag;
+        Items = items;
+    }
 
-    public void Add(ConsoleTreeItem item)
+    public ConsoleTreeItem Add(ConsoleTreeItem item)
     {
         item.Parent = this;
-        _items.Add(item);
+        Items.Add(item);
+        return this;
     }
 
-    public void Add(params ConsoleTreeItem[] items)
+    public ConsoleTreeItem Add(string name)
+    {
+        var childItem = new ConsoleTreeItem(name) { Parent = this };
+        Items.Add(childItem);
+        return this;
+    }
+
+    public ConsoleTreeItem Add(string name, object tag)
+    {
+        var childItem = new ConsoleTreeItem(name, tag) { Parent = this };
+        Items.Add(childItem);
+        return this;
+    }
+
+    public ConsoleTreeItem Add(params ConsoleTreeItem[] items)
     {
         items.ForEach(x => x.Parent = this);
-        _items.AddRange(items);
+        Items.AddRange(items);
+        return this;
     }
 
-    public void AddDummy(int count = 1)
+    public ConsoleTreeItem AddDummy(int count = 1)
     {
         for (int i = 0; i < count; i++)
-            _items.Add(s_dummy);
+            Items.Add(new ConsoleTreeItem() { Dummy = true });
+
+        return this;
     }
 
-    public void Clear() => _items.Clear();
-    public bool Contains(ConsoleTreeItem item) => _items.Contains(item);
-    public void CopyTo(ConsoleTreeItem[] array, int arrayIndex) => _items.CopyTo(array, arrayIndex);
-    public bool Remove(ConsoleTreeItem item) => _items.Remove(item);
-    public int IndexOf(ConsoleTreeItem item) => _items.IndexOf(item);
-    public void Insert(int index, ConsoleTreeItem item) => _items.Insert(index, item);
-    public void RemoveAt(int index) => _items.RemoveAt(index);
-    public ConsoleTreeItem? Find(Predicate<ConsoleTreeItem> predicate) => _items.Find(predicate);
+    public ConsoleTreeItem AddReturnChild(ConsoleTreeItem item)
+    {
+        item.Parent = this;
+        Items.Add(item);
+        return item;
+    }
+
+    public ConsoleTreeItem AddReturnChild(string name)
+    {
+        var childItem = new ConsoleTreeItem(name) { Parent = this };
+        Items.Add(childItem);
+        return childItem;
+    }
+
+    public ConsoleTreeItem AddReturnChild(string name, object tag)
+    {
+        var childItem = new ConsoleTreeItem(name, tag) { Parent = this };
+        Items.Add(childItem);
+        return childItem;
+    }
+
+    public ConsoleTreeItem AddReturnParent(string name)
+    {
+        var childItem = new ConsoleTreeItem(name) { Parent = this };
+        Items.Add(childItem);
+        return Parent!;
+    }
+
+    public ConsoleTreeItem AddReturnParent(string name, object tag)
+    {
+        var childItem = new ConsoleTreeItem(name, tag) { Parent = this };
+        Items.Add(childItem);
+        return Parent!;
+    }
+
+   
+    public static int CountOf(ConsoleTreeItem item)
+    {
+        int count = 0;
+        count += item.Items.Count;
+        item.ForEach(x => count += CountOf(x));
+        return count;
+    }
+
+    public void Clear() => Items.Clear();
+    public bool Contains(ConsoleTreeItem item) => Items.Contains(item);
+    public void CopyTo(ConsoleTreeItem[] array, int arrayIndex) => Items.CopyTo(array, arrayIndex);
+    public bool Remove(ConsoleTreeItem item)
+    {
+        bool childRemoved = Items.Remove(item);
+        if (childRemoved)
+            item.Parent = null;
+        return childRemoved;
+    }
+
+    public int IndexOf(ConsoleTreeItem item) => Items.IndexOf(item);
+
+    public void Insert(int index, ConsoleTreeItem item)
+    {
+        item.Parent = this;
+        Items.Insert(index, item);
+    }
+
+    public void RemoveAt(int index)
+    {
+        Items.RemoveAt(index);
+        Items[index].Parent = null;
+    }
+    public ConsoleTreeItem? Find(Predicate<ConsoleTreeItem> predicate) => Items.Find(predicate);
 
     public ConsoleTreeItem? Find(Predicate<ConsoleTreeItem> predicate, out int index)
     {
         index = -1;
 
-        for (var i = 0; i < _items.Count; i++)
+        for (var i = 0; i < Items.Count; i++)
         {
-            if (!predicate(_items[i])) continue;
+            if (!predicate(Items[i])) continue;
             index = i;
-            return _items[i];
+            return Items[i];
         }
 
         return null;
     }
 
-    public ConsoleTreeItem? FindLast(Predicate<ConsoleTreeItem> predicate) => _items.FindLast(predicate);
+    public ConsoleTreeItem? FindLast(Predicate<ConsoleTreeItem> predicate) => Items.FindLast(predicate);
 
     public ConsoleTreeItem? FindLast(Predicate<ConsoleTreeItem> predicate, out int index)
     {
         index = -1;
 
-        for (var i = _items.Count - 1; i >= 0; i--)
+        for (var i = Items.Count - 1; i >= 0; i--)
         {
-            if (!predicate(_items[i])) continue;
+            if (!predicate(Items[i])) continue;
             index = i;
-            return _items[i];
+            return Items[i];
         }
 
         return null;
@@ -140,11 +228,70 @@ public class ConsoleTreeItem : IList<ConsoleTreeItem>
 
     public IEnumerator<ConsoleTreeItem> GetEnumerator()
     {
-        return _items.GetEnumerator();
+        return Items.GetEnumerator();
     }
 
     IEnumerator IEnumerable.GetEnumerator()
     {
         return GetEnumerator();
     }
+
+    void ICollection<ConsoleTreeItem>.Add(ConsoleTreeItem item) => throw new NotImplementedException();
+
+    public object Clone()
+    {
+        object? childCloneableTag = Tag;
+
+        if (Tag is ICloneable childCloneable)
+            childCloneableTag = childCloneable.Clone();
+
+        return new ConsoleTreeItem(Name, childCloneableTag!, CloneChildren(this));
+    }
+
+    private static List<ConsoleTreeItem> CloneChildren(ConsoleTreeItem parent)
+    {
+        return parent.Select(item => (item.Clone() as ConsoleTreeItem)!).ToList();
+    }
+
+    public ConsoleTreeItem SetFold(bool foldEnabled)
+    {
+        Fold = foldEnabled;
+        return this;
+    }
+
+    public ConsoleTreeItem SetForegroundColor(ConsoleColor foregroundColor)
+    {
+        ForegroundColor = foregroundColor;
+        return this;
+    }
+
+    public ConsoleTreeItem SetBackgroundColor(ConsoleColor backgroundColor)
+    {
+        BackgroundColor = backgroundColor;
+        return this;
+    }
+
+    public ConsoleTreeItem SetDummy(bool dummyEnabled)
+    {
+        Dummy = dummyEnabled;
+        return this;
+    }
+
+    public ConsoleTreeItem SetTag(object tag)
+    {
+        Tag = tag;
+        return this;
+    }
+
+    public ConsoleTreeItem SetBridgeLength(int length)
+    {
+        BridgeLength = length;
+        return this;
+    }
+
+    public ConsoleTreeItem? GetParent()
+    {
+        return Parent;
+    }
 }
+

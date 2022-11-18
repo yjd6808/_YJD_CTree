@@ -78,7 +78,24 @@ ConsoleTreeItem child3 = new("자식-3");
 ConsoleTreeItem child4 = new("자식-4");
 root.Add(child1, child2, child3, child4);
 root.Print();
+
+
+/* 동일한 출력 빌더 버전
+var root = new ConsoleTree("루트");
+root.Add("자식-1")
+    .AddReturnChild("자식-2")
+        .Add("자식-2-1")
+        .AddReturnChild("자식-2-2")
+            .Add("자식-2-2-1")
+            .AddReturnParent("자식-2-2-2")
+        .AddReturnParent("자식-2-3")
+    .Add("자식-3")
+    .Add("자식-4");
+root.Print();
+*/
 ```
+
+
 
 <br>
 
@@ -116,6 +133,23 @@ ConsoleTreeItem child3 = new("자식-3");
 ConsoleTreeItem child4 = new("자식-4");
 root.Add(child1, child2, child3, child4);
 root.Print();
+
+
+/* 동일한 출력 빌더 버전
+var root = new ConsoleTree("루트");
+root.Add("자식-1")
+    .AddReturnChild("자식-2")
+        .Add("자식-2-1")
+        .AddReturnChild(new ConsoleTreeItem("자식-2-2") { Fold = true })
+            .Add("자식-2-2-1")
+            .AddReturnParent("자식-2-2-2")
+        .AddReturnParent("자식-2-3")
+    .Add("자식-3")
+    .Add("자식-4");
+root.Print();
+*/
+
+
 ```
 
 ![](./Documents/Images/02.png)
@@ -163,6 +197,25 @@ ConsoleTreeItem child3 = new("자식-3");
 ConsoleTreeItem child4 = new("자식-4");
 root.Add(child1, child2, child3, child4);
 root.Print();
+
+
+
+/* 동일한 출력 빌더 버전
+var root = new ConsoleTree("루트");
+root.Add(new ConsoleTreeItem("자식-1") { Dummy = true })
+    .AddReturnChild("자식-2")
+        .Add("자식-2-1")
+        .AddDummy()
+        .AddReturnChild("자식-2-2")
+            .Add("자식-2-2-1")
+            .AddReturnParent("자식-2-2-2")
+        .AddDummy(2)
+        .AddReturnParent("자식-2-3")
+    .Add("자식-3")
+    .Add("자식-4");
+root.Print();
+*/
+
 ```
 
 
