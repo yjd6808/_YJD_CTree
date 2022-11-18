@@ -53,9 +53,7 @@ public class ConsoleTreeItem : IList<ConsoleTreeItem>, ICloneable
     public ConsoleColor ForegroundColor { get; set; } = ConsoleColor.Black;
     public ConsoleColor BackgroundColor { get; set; } = ConsoleColor.Black;
     public bool IsReadOnly => false;
-    public int BridgeLength { get; set; } = DefaultBridgeLength;
-
-    public static int DefaultBridgeLength = 0;
+    public int BridgeLength { get; set; } = 0;
 
 
     public ConsoleTreeItem this[int index]
@@ -146,6 +144,16 @@ public class ConsoleTreeItem : IList<ConsoleTreeItem>, ICloneable
         Items.Add(childItem);
         return childItem;
     }
+
+
+
+    public ConsoleTreeItem AddReturnParent(ConsoleTreeItem item)
+    {
+        item.Parent = this;
+        Items.Add(item);
+        return Parent!;
+    }
+
 
     public ConsoleTreeItem AddReturnParent(string name)
     {

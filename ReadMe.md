@@ -6,6 +6,8 @@
    1. <a href="#_3_2" id="li_3_2">Folding 예제</a>
    1. <a href="#_3_3" id="li_3_3">Dummy 예제</a>
    1. <a href="#_3_4" id="li_3_4">색상 변경 예제</a>
+   1. <a href="#_3_5" id="li_3_5">브릿지 길이 조절</a>
+   1. <a href="#_3_6" id="li_3_6">트리 패딩</a>
 
 
 <br>
@@ -24,9 +26,8 @@ nuget에서 CTree 검색 후 다운로드하면 됨.
 
 ## 1. 시작 배경 <a href="#_1" id="_1"></a>
 
-[Tcp 홀펀칭 구현](https://github.com/yjd6808/_YJD_TcpDiggingHole)을 하면서 콘솙창에 트리 구조의 메뉴를 출력하다가
-옛날에 cmd에서 tree 명령을 치던 기억이 떠올라서 만들게 되었다.  
-만드는데 3시간밖에 안걸린 작은 프로젝트인데 정리하고 인생 첫 nuget 패키지 배포를 한다고 몇시간이 더걸렸다.
+[Tcp 홀펀칭 구현](https://github.com/yjd6808/_YJD_TcpDiggingHole)을 하면서 콘솙창에 트리 구조의 메뉴를 출력하다가  
+몇년전에 cmd에서 tree 명령을 치던 기억이 떠올라서 만들게 되었다.  
 
 <br>
 <br>
@@ -262,3 +263,43 @@ root.Print();
 ```
 
 ![](./Documents/Images/04.png)
+
+<br>
+<br>
+
+### 5. <b>[브릿지 길이 조절]</b><a href="#_3_5" id="_3_5"></a>
+
+```c#
+var root = new ConsoleTree("루트");
+
+for (int i = 0; i < 20; i++)
+{
+    root.Add(new ConsoleTreeItem($"자식-{i}") { BridgeLength = i });
+}
+
+root.Print();
+```
+
+![](./Documents/Images/05.png)
+
+
+<br>
+<br>
+
+### 6. <b>[트리 패딩]</b><a href="#_3_6" id="_3_6"></a>
+
+```c#
+var root = new ConsoleTree("루트");
+root.ItemLeftPad = 5;
+
+root.AddReturnChild(new ConsoleTreeItem($"자식-1"))
+        .Add("자식-1-1")
+        .Add("자식-1-2")
+        .Add("자식-1-3");
+root.Add(new ConsoleTreeItem($"자식-1"));
+root.Add(new ConsoleTreeItem($"자식-1"));
+
+root.Print();
+```
+
+![](./Documents/Images/06.png)

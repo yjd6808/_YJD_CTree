@@ -19,13 +19,13 @@ public class ConsoleTree : ICloneable
     public int Count => Root.Count + 1;
     public int CountRecursive => Root.CountRecursive + 1;
 
-    public static char VertialBridge = '│';
-    public static char VerticalItemBridge = '├';
-    public static char VerticalItemBridgeLast = '└';
-    public static char HorizontalBrdige = '─';
-    public static char Space = ' ';
+    public char VertialBridge { get; set; } = '│';
+    public char VerticalItemBridge { get; set; } = '├';
+    public char VerticalItemBridgeLast { get; set; } = '└';
+    public char HorizontalBrdige { get; set; } = '─';
+    public char Space { get; set; } = ' ';
+    public int ItemLeftPad { get; set; } = 1;
 
-    private const int ItemLeftPad = 2;
 
     public ConsoleColor BridgeForegroundColor { get; set; } = Console.ForegroundColor;
     public ConsoleColor ItemForegroundColor { get; set; } = Console.ForegroundColor;
@@ -65,6 +65,7 @@ public class ConsoleTree : ICloneable
         return Root;
     }
 
+    public ConsoleTreeItem AddReturnChild(ConsoleTreeItem item) => Root.AddReturnChild(item);
     public ConsoleTreeItem AddReturnChild(string name) => Root.AddReturnChild(name);
     public ConsoleTreeItem AddReturnChild(string name, object tag) => Root.AddReturnChild(name ,tag);
 
@@ -132,8 +133,8 @@ public class ConsoleTree : ICloneable
         if (item.Count <= 0)
             return;
 
-        ConsoleTreeItem? lastDummy = item.FindLast(x => x.Dummy, out int lastDummyIdx);
-        ConsoleTreeItem? unused = item.FindLast(x => !x.Dummy, out int lastNotDummyidx);
+        ConsoleTreeItem? lastDummy = item.FindLast(x => x.Dummy, out int lastDummyIdx);     // 마지막 더미 아이템의 위치
+        ConsoleTreeItem? unused = item.FindLast(x => !x.Dummy, out int lastNotDummyidx);    // 마지막 더미 아이템이 아닌 아이템의 위치
 
         // 마지막 위치에 더미노드가 있는 경우 잠시 빼놨다가 마지막에 다시 넣어주도록 한다.
         if (lastDummyIdx == item.Count - 1)

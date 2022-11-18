@@ -10,7 +10,10 @@ using CTree;
 // DummyTest(true);
 // ColorTest();
 // FindTest();
-CloneTest();
+// CloneTest();
+// BridgeTest();
+ItemPaddingTest();
+
 
 
 void BasicTest(bool builder)
@@ -290,6 +293,33 @@ void CloneTest()
         Debug.Assert(root.Find(x => ((cloneable)x.Tag).data == 8)?.Name == "자식-3");
         Debug.Assert(root.Find(x => ((cloneable)x.Tag).data == 9)?.Name == "자식-4");
     }
+}
+
+void BridgeTest()
+{
+    var root = new ConsoleTree("루트");
+
+    for (int i = 0; i < 20; i++)
+    {
+        root.Add(new ConsoleTreeItem($"자식-{i}") { BridgeLength = i });
+    }
+
+    root.Print();
+}
+
+void ItemPaddingTest()
+{
+    var root = new ConsoleTree("루트");
+    root.ItemLeftPad = 5;
+
+    root.AddReturnChild(new ConsoleTreeItem($"자식-1"))
+            .Add("자식-1-1")
+            .Add("자식-1-2")
+            .Add("자식-1-3");
+    root.Add(new ConsoleTreeItem($"자식-1"));
+    root.Add(new ConsoleTreeItem($"자식-1"));
+
+    root.Print();
 }
 
 void FullTest()
